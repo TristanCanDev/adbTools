@@ -60,4 +60,8 @@ public class PlatformTools {
 		}
 		return devices;
 	}
+	
+	public String getAdbPath() {
+		return adbPath;
+	}
 }

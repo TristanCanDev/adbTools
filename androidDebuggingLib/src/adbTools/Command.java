@@ -136,6 +136,19 @@ public class Command {
 
 	/**
 	 * 
+	 * Setter method for the args field.
+	 * 
+	 * @param toAdd Multiple string arguments to add to argument field
+	 * 
+	 */
+	public void addArgs(String... toAdd) {
+		for (int i = 0; i < toAdd.length; i++) {
+			args.add(toAdd[i]);
+		}
+	}
+
+	/**
+	 * 
 	 * Executes the given command and adds line by line output to output field
 	 * 
 	 */
@@ -144,13 +157,21 @@ public class Command {
 			Process process = Runtime.getRuntime().exec(this.toString());
 
 			BufferedReader out = new BufferedReader(new InputStreamReader(process.getInputStream()));
-
+			BufferedReader errOut = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+			
 			String line = out.readLine();
 			while (line != null) {
 				output.add(line);
 				line = out.readLine();
 			}
+			
+			line = errOut.readLine();
+			while(line != null) {
+				output.add(line);
+				line = errOut.readLine();
+			}
 
+			errOut.close();
 			out.close();
 		} catch (IOException e) {
 			e.printStackTrace();

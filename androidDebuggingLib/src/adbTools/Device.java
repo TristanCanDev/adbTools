@@ -4,6 +4,9 @@ import java.util.List;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.io.FileNotFoundException;
+import java.lang.IndexOutOfBoundsException;
+import java.lang.RuntimeException;
 
 /**
  * 
@@ -57,6 +60,8 @@ public class Device {
 			adbPath = device.adbPath;
 			state = device.state;
 			transportId = device.transportId;
+		} else {
+			throw new IndexOutOfBoundsException("No device could be found within that index");
 		}
 	}
 
@@ -79,21 +84,49 @@ public class Device {
 			adbPath = device.adbPath;
 			state = device.state;
 			transportId = device.transportId;
+		} else {
+			throw new RuntimeException("There are no devices connected");
 		}
 	}
 
+	/**
+	 * 
+	 * Returns a String representation of a device
+	 * 
+	 */
 	public String toString() {
 		return String.format("Serial: %s, Model: %s, State: %s, Transport ID: %d", serialNo, model, state, transportId);
 	}
 
+	/**
+	 * 
+	 * A getter method for the device serial number
+	 * 
+	 * @return A String serial number for an android device
+	 * 
+	 */
 	public String getSerial() {
 		return serialNo;
 	}
 
+	/**
+	 * 
+	 * A getter method for the device model
+	 * 
+	 * @return A string model name for an android device
+	 * 
+	 */
 	public String getModel() {
 		return model;
 	}
 
+	/**
+	 * 
+	 * A getter method for the state of the device
+	 * 
+	 * @return A string representation of the device state
+	 * 
+	 */
 	public String getState() {
 
 		PlatformTools pfTools = new PlatformTools();
@@ -112,6 +145,13 @@ public class Device {
 		return state;
 	}
 
+	/**
+	 * 
+	 * A getter method for the transport id of the device
+	 * 
+	 * @return An integer transport id for an android device
+	 * 
+	 */
 	public int getTransportId() {
 		return transportId;
 	}
@@ -125,7 +165,7 @@ public class Device {
 	 *                   'sdcard/android/data')
 	 * 
 	 */
-	public void push(String localPath, String remotePath) {
+	public void push(String localPath, String remotePath) throws FileNotFoundException {
 		File file = new File(localPath);
 		if (file.exists()) {
 			Path path = Paths.get(file.getAbsolutePath());
@@ -142,11 +182,58 @@ public class Device {
 			for (int i = 0; i < pushFile.getOutput().size(); i++) {
 				String line = pushFile.getOutput().get(i);
 				if (line.contains("No such file or directory")) {
-					System.out.println("Push Failed: No such file or directory on device");
+					throw new FileNotFoundException(
+							"The file/directory specified in remotePath does not exist on the device");
 				}
 			}
 		} else {
-			System.out.println("File does not exist");
+			throw new FileNotFoundException("The directory or file given does not exist");
+		}
+	}
+
+	public void pull(String remotePath, String localPath) throws FileNotFoundException {
+		File local = new File(localPath);
+		File remote = new File(remotePath);
+		if (local.exists()) {
+			Command pullFile = new Command(adbPath, "-s", serialNo, "pull", remotePath);
+			
+			if(local.isDirectory()) {
+				pullFile.addArg(localPath + "\\" + remote.getName());
+				pullFile.exec();
+			}else {
+				pullFile.addArg(localPath);
+				pullFile.exec();
+			}
+			for(int i = 0; i < pullFile.getOutput().size(); i++) {
+				String line = pullFile.getOutput().get(i);
+				if (line.contains("No such file or directory")) {
+					throw new FileNotFoundException(
+							"The file/directory specified in remotePath does not exist on the device");
+				}
+			}
+		}
+		else {
+			throw new FileNotFoundException("The file/directory specified in localPath does not exist on this machine");
+		}
+	}
+	
+	public void pull(String remotePath, String localPath, boolean preserve) {
+		File local = new File(localPath);
+		File remote = new File(remotePath);
+		if (local.exists()) {
+			Command pullFile = new Command(adbPath, "-s", serialNo, "pull");
+			
+			if(preserve) {
+				pullFile.addArg("-a");
+			}
+			
+			if(local.isDirectory()) {
+				pullFile.addArgs(remotePath, localPath + "\\" + remote.getName());
+				pullFile.exec();
+			}else {
+				pullFile.addArgs(remotePath, localPath);
+				pullFile.exec();
+			}
 		}
 	}
 }
