@@ -1,4 +1,4 @@
-package androidDebuggingLib;
+package adbTools;
 
 import java.io.File;
 import java.util.List;
