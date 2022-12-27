@@ -1,0 +1,9 @@
+/**
+ * 
+ */
+/**
+ * @author trist
+ *
+ */
+module androidDebuggingLib {
+}
