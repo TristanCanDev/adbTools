@@ -1,1 +1,0 @@
-typeSearchIndex = [{"l":"All Classes and Interfaces","u":"allclasses-index.html"},{"p":"androidDebuggingLib","l":"Command"},{"p":"androidDebuggingLib","l":"Device"},{"p":"androidDebuggingLib","l":"PlatformTools"}];updateSearchResults();
