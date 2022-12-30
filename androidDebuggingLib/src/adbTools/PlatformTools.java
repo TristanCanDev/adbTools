@@ -15,6 +15,13 @@ import java.util.ArrayList;
 public class PlatformTools {
 	private String adbPath;
 
+	/**
+	 * 
+	 * Class constructor that sets up path to ADB
+	 * 
+	 * @param toAdb String path to ADB
+	 * 
+	 */
 	public PlatformTools(String toAdb) {
 		File file = new File(toAdb);
 		if (file.exists()) {
@@ -24,6 +31,12 @@ public class PlatformTools {
 		}
 	}
 
+	/**
+	 * 
+	 * Class constructor that sets ADB path as "adb"
+	 * Only use this if you have ADB installed to C:/Windows/ or somewhere that allows it directly in the command line on other operating systems
+	 * 
+	 */
 	public PlatformTools() {
 		adbPath = "adb";
 	}
@@ -64,6 +77,13 @@ public class PlatformTools {
 		return devices;
 	}
 	
+	/**
+	 * 
+	 * A getter method for the adbPath field
+	 * 
+	 * @return A string path to an ADB installation
+	 * 
+	 */
 	public String getAdbPath() {
 		return adbPath;
 	}

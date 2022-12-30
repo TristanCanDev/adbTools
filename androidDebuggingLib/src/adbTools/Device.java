@@ -160,6 +160,13 @@ public class Device {
 		return transportId;
 	}
 	
+	/**
+	 * 
+	 * A getter method for the installed applications on the device
+	 * 
+	 * @return A string list of package (application) names
+	 * 
+	 */
 	public List<String> getPackages(){
 		
 		List<String> packages = new ArrayList<String>();
@@ -168,7 +175,7 @@ public class Device {
 		
 		for(int i = 0; i < pmShell.getOutput().size(); i++) {
 			String line = pmShell.getOutput(i);
-			if(!line.equals(" ") && !line.equals("") && line.startsWith("package:")) {
+			if(line.startsWith("package:")) {
 				packages.add(line.replace("package:", ""));
 			}
 		}
@@ -212,6 +219,15 @@ public class Device {
 		}
 	}
 
+	/**
+	 * 
+	 * A method to copy a file from a device and download it locally
+	 * 
+	 * @param remotePath A string path to the file on the device
+	 * @param localPath A string path to the directory the file is to be placed
+	 * @throws FileNotFoundException When the local directory specified does not exist
+	 * 
+	 */
 	public void pull(String remotePath, String localPath) throws FileNotFoundException {
 		File local = new File(localPath);
 		File remote = new File(remotePath);
@@ -238,6 +254,15 @@ public class Device {
 		}
 	}
 	
+	/**
+	 * 
+	 * A method to copy a file from a device and download it locally
+	 * 
+	 * @param remotePath A string path to the file on the device
+	 * @param localPath A string path to the directory the file is to be placed
+	 * @param preserve If true will preserve the file's metadata
+	 * 
+	 */
 	public void pull(String remotePath, String localPath, boolean preserve) {
 		File local = new File(localPath);
 		File remote = new File(remotePath);
@@ -258,6 +283,13 @@ public class Device {
 		}
 	}
 	
+	/**
+	 * 
+	 * A method to install packages (applications) to a device
+	 * 
+	 * @param packagePath A string path to the package on the local machine
+	 * 
+	 */
 	public void install(String packagePath) {
 		File file = new File(packagePath);
 		
@@ -269,6 +301,15 @@ public class Device {
 		}
 	}
 	
+	/**
+	 * 
+	 * A method to install packages (applications) to a device
+	 * This method allows for extra arguments to be placed in the command
+	 * 
+	 * @param packagePath A string path to the package on the local machine
+	 * @param args String forms of arguments (such as "-l" to forward lock) added to the command
+	 * 
+	 */
 	public void install(String packagePath, String...args) {
 		File file = new File(packagePath);
 		
@@ -284,6 +325,13 @@ public class Device {
 		}
 	}
 	
+	/**
+	 * 
+	 * Allows for multiple packages (applications) to be installed
+	 * 
+	 * @param packagePaths String paths on the local machine to packages to be installed
+	 * 
+	 */
 	public void installMultiple(String...packagePaths) {
 		List<File> packages = new ArrayList<File>();
 		
@@ -301,27 +349,52 @@ public class Device {
 		}
 	}
 	
+	/**
+	 * 
+	 * A method to uninstall packages (applications) from a device
+	 * 
+	 * @param application The package (application) to uninstall on the device
+	 * @throws FileNotFoundException
+	 * 
+	 */
 	public void uninstall(String application) throws FileNotFoundException {
 		Command uninstall = new Command(adbPath, "-s", serialNo, "uninstall", application);
 		uninstall.exec();
 		
 		for(int i = 0; i < uninstall.getOutput().size(); i++) {
 			if(uninstall.getOutput(i).contains("No such file or directory")) {
-				throw new FileNotFoundException("The file/directory specified in remotePath does not exist on the device");
+				throw new FileNotFoundException("The package specified does not exist");
 			}
 		}
 	}
 	
+	/**
+	 * 
+	 * A method to enable verity on the device
+	 * 
+	 */
 	public void enableVerity() {
 		Command enable = new Command(adbPath, "-s", serialNo, "enable-verity");
 		enable.exec();
 	}
 	
+	/**
+	 * 
+	 * A method to disable verity on the device
+	 * 
+	 */
 	public void disableVerity() {
 		Command disable = new Command(adbPath, "-s", serialNo, "disable-verity");
 		disable.exec();
 	}
 	
+	/**
+	 * 
+	 * A method to reboot the device
+	 * 
+	 * @param option A string option for how to reboot such as bootloader|recovery|sideload|sideload-auto-reboot
+	 * 
+	 */
 	public void reboot(String option) {
 		Command reboot = new Command(adbPath, "-s", serialNo, "reboot");
 		if(option.equals("bootloader") || option.equals("recovery") || option.equals("sideload") || option.equals("sideload-auto-reboot")) {
