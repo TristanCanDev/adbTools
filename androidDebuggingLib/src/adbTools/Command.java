@@ -9,6 +9,9 @@ import java.util.List;
 /**
  * 
  * Command Builder
+ * 
+ * @author Tristan Bouchard
+ * @version 0.3.0
  *
  */
 public class Command {
@@ -67,6 +70,23 @@ public class Command {
 	 */
 	public List<String> getOutput() {
 		return output;
+	}
+	
+	/**
+	 * 
+	 * Getter method for the output of a command
+	 * 
+	 * @param i An integer index for the output lines
+	 * @return A String line from the output of a command
+	 * 
+	 */
+	public String getOutput(int i) {
+		if(output.size() >= i) {
+			return output.get(i);
+		}
+		else {
+			throw new IndexOutOfBoundsException();
+		}
 	}
 
 	/**

@@ -1,5 +1,6 @@
 package adbTools;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.io.File;
 import java.nio.file.Path;
@@ -12,6 +13,9 @@ import java.lang.RuntimeException;
  * 
  * This is a utility class that models an Android Device and allows you to
  * execute ADB commands on the device
+ * 
+ * @author Tristan Bouchard
+ * @version 0.3.0
  *
  */
 public class Device {
@@ -155,6 +159,23 @@ public class Device {
 	public int getTransportId() {
 		return transportId;
 	}
+	
+	public List<String> getPackages(){
+		
+		List<String> packages = new ArrayList<String>();
+		Command pmShell = new Command(adbPath, "-s", serialNo, "shell", "pm", "list", "packages");
+		pmShell.exec();
+		
+		for(int i = 0; i < pmShell.getOutput().size(); i++) {
+			String line = pmShell.getOutput(i);
+			if(!line.equals(" ") && !line.equals("") && line.startsWith("package:")) {
+				packages.add(line.replace("package:", ""));
+			}
+		}
+		
+		return packages;
+		
+	}
 
 	/**
 	 * 
@@ -234,6 +255,81 @@ public class Device {
 				pullFile.addArgs(remotePath, localPath);
 				pullFile.exec();
 			}
+		}
+	}
+	
+	public void install(String packagePath) {
+		File file = new File(packagePath);
+		
+		if(file.exists() && file.isFile()) {
+			if(file.getName().endsWith(".apk")) {
+				Command installPackage = new Command(adbPath, "-s", serialNo, "install", file.getAbsolutePath());
+				installPackage.exec();
+			}
+		}
+	}
+	
+	public void install(String packagePath, String...args) {
+		File file = new File(packagePath);
+		
+		if(file.exists() && file.isFile()) {
+			if(file.getName().endsWith(".apk")) {
+				Command installPackage = new Command(adbPath, "-s", serialNo, "install");
+				for(int i = 0; i < args.length; i++) {
+					installPackage.addArg(args[i]);
+				}
+				installPackage.addArg(file.getAbsolutePath());
+				installPackage.exec();
+			}
+		}
+	}
+	
+	public void installMultiple(String...packagePaths) {
+		List<File> packages = new ArrayList<File>();
+		
+		for(int i = 0; i < packagePaths.length; i++) {
+			File file = new File(packagePaths[i]);
+			packages.add(file);
+		}
+		
+		Command installMultiple = new Command(adbPath, "-s", serialNo, "install-multiple");
+		
+		for(int i = 0; i < packages.size(); i++) {
+			if(packages.get(i).isFile() && packages.get(i).getName().endsWith(".apk")) {
+				installMultiple.addArg(packages.get(i).getAbsolutePath());
+			}
+		}
+	}
+	
+	public void uninstall(String application) throws FileNotFoundException {
+		Command uninstall = new Command(adbPath, "-s", serialNo, "uninstall", application);
+		uninstall.exec();
+		
+		for(int i = 0; i < uninstall.getOutput().size(); i++) {
+			if(uninstall.getOutput(i).contains("No such file or directory")) {
+				throw new FileNotFoundException("The file/directory specified in remotePath does not exist on the device");
+			}
+		}
+	}
+	
+	public void enableVerity() {
+		Command enable = new Command(adbPath, "-s", serialNo, "enable-verity");
+		enable.exec();
+	}
+	
+	public void disableVerity() {
+		Command disable = new Command(adbPath, "-s", serialNo, "disable-verity");
+		disable.exec();
+	}
+	
+	public void reboot(String option) {
+		Command reboot = new Command(adbPath, "-s", serialNo, "reboot");
+		if(option.equals("bootloader") || option.equals("recovery") || option.equals("sideload") || option.equals("sideload-auto-reboot")) {
+			reboot.addArg(option);
+			reboot.exec();
+		}
+		else {
+			throw new RuntimeException("The option specified does not work with this command. Try either sideload, recovery, bootloader, or sideload-auto-reboot");
 		}
 	}
 }
