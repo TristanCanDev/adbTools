@@ -9,7 +9,7 @@ import java.util.ArrayList;
  * Master util class for ADB Handling
  * 
  * @author Tristan Bouchard
- * @version 0.3.0
+ * @version 0.4.0
  *
  */
 public class PlatformTools {

@@ -11,7 +11,7 @@ import java.util.List;
  * Command Builder
  * 
  * @author Tristan Bouchard
- * @version 0.3.0
+ * @version 0.4.0
  *
  */
 public class Command {

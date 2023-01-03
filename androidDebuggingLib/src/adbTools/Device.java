@@ -15,7 +15,7 @@ import java.lang.RuntimeException;
  * execute ADB commands on the device
  * 
  * @author Tristan Bouchard
- * @version 0.3.0
+ * @version 0.4.0
  *
  */
 public class Device {
@@ -228,24 +228,25 @@ public class Device {
 	 * @throws FileNotFoundException When the local directory specified does not exist
 	 * 
 	 */
-	public void pull(String remotePath, String localPath) throws FileNotFoundException {
+	public void pull(AndroidFile remotePath, String localPath) throws FileNotFoundException {
 		File local = new File(localPath);
-		File remote = new File(remotePath);
 		if (local.exists()) {
-			Command pullFile = new Command(adbPath, "-s", serialNo, "pull", remotePath);
+			Command pullFile = new Command(adbPath, "-s", serialNo, "pull", remotePath.toString());
 			
-			if(local.isDirectory()) {
-				pullFile.addArg(localPath + "\\" + remote.getName());
-				pullFile.exec();
-			}else {
-				pullFile.addArg(localPath);
-				pullFile.exec();
-			}
-			for(int i = 0; i < pullFile.getOutput().size(); i++) {
-				String line = pullFile.getOutput().get(i);
-				if (line.contains("No such file or directory")) {
-					throw new FileNotFoundException(
-							"The file/directory specified in remotePath does not exist on the device");
+			if(remotePath.exists(this)) {
+				if(local.isDirectory()) {
+					pullFile.addArg(localPath + "\\" + remotePath.getFileName());
+					pullFile.exec();
+				}else {
+					pullFile.addArg(localPath);
+					pullFile.exec();
+				}
+				for(int i = 0; i < pullFile.getOutput().size(); i++) {
+					String line = pullFile.getOutput().get(i);
+					if (line.contains("No such file or directory")) {
+						throw new FileNotFoundException(
+								"The file/directory specified in remotePath does not exist on the device");
+					}
 				}
 			}
 		}
@@ -258,14 +259,14 @@ public class Device {
 	 * 
 	 * A method to copy a file from a device and download it locally
 	 * 
-	 * @param remotePath A string path to the file on the device
+	 * @param remotePath A AndroidFile path to the file on the device
 	 * @param localPath A string path to the directory the file is to be placed
 	 * @param preserve If true will preserve the file's metadata
+	 * @throws FileNotFoundException 
 	 * 
 	 */
-	public void pull(String remotePath, String localPath, boolean preserve) {
+	public void pull(AndroidFile remotePath, String localPath, boolean preserve) throws FileNotFoundException {
 		File local = new File(localPath);
-		File remote = new File(remotePath);
 		if (local.exists()) {
 			Command pullFile = new Command(adbPath, "-s", serialNo, "pull");
 			
@@ -273,12 +274,21 @@ public class Device {
 				pullFile.addArg("-a");
 			}
 			
-			if(local.isDirectory()) {
-				pullFile.addArgs(remotePath, localPath + "\\" + remote.getName());
-				pullFile.exec();
-			}else {
-				pullFile.addArgs(remotePath, localPath);
-				pullFile.exec();
+			if(remotePath.exists(this)) {
+				if(local.isDirectory()) {
+					pullFile.addArg(localPath + "\\" + remotePath.getFileName());
+					pullFile.exec();
+				}else {
+					pullFile.addArg(localPath);
+					pullFile.exec();
+				}
+				for(int i = 0; i < pullFile.getOutput().size(); i++) {
+					String line = pullFile.getOutput().get(i);
+					if (line.contains("No such file or directory")) {
+						throw new FileNotFoundException(
+								"The file/directory specified in remotePath does not exist on the device");
+					}
+				}
 			}
 		}
 	}
@@ -404,5 +414,19 @@ public class Device {
 		else {
 			throw new RuntimeException("The option specified does not work with this command. Try either sideload, recovery, bootloader, or sideload-auto-reboot");
 		}
+	}
+	
+	/**
+	 * 
+	 * A method for issuing unsupported shell commands to a device
+	 * 
+	 * @param command The command to issue
+	 * @return Shell output
+	 * 
+	 */
+	public List<String> shell(String command) {
+		Command shell = new Command(adbPath, "-s", serialNo, "shell", command);
+		shell.exec();
+		return shell.getOutput();
 	}
 }
